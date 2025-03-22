@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using phosAnalyticsApi.IRepositories;
+using phosAnalyticsApi.Repositories;
 
 namespace phosAnalyticsApi
 {
@@ -16,6 +18,8 @@ namespace phosAnalyticsApi
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddScoped<IChartDataRpstr, ChartDataRpstr>();
 
             var app = builder.Build();
 
