@@ -1,3 +1,4 @@
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace phosAnalyticsApi
 {
@@ -6,6 +7,8 @@ namespace phosAnalyticsApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddDbContext<phosAnalyticsApiContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("phosAnalyticsApiContext") ?? throw new InvalidOperationException("Connection string 'phosAnalyticsApiContext' not found.")));
 
             // Add services to the container.
 
