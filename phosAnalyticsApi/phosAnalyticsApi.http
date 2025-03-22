@@ -1,0 +1,6 @@
+@phosAnalyticsApi_HostAddress = http://localhost:5079
+
+GET {{phosAnalyticsApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
