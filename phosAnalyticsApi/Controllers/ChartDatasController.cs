@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using phosAnalyticsApi.DTOs;
 using phosAnalyticsApi.IRepositories;
 using phosAnalyticsApi.Models;
-using phosAnalyticsApi.Repositories;
 
 namespace phosAnalyticsApi.Controllers
 {
@@ -21,14 +20,38 @@ namespace phosAnalyticsApi.Controllers
         public async Task<ActionResult<IEnumerable<ChartData>>> GetChartData()
         {
             var chartDatas = await _rpstr.GetChartDatas();
-            return Ok(chartDatas);
+
+            var chartDatasDTO = chartDatas.Select(chartData => new ChartDataDTO
+            {
+                CategoryId = chartData.CategoryId.ToString(),
+                Title = chartData.Title,
+                Points = chartData.Points.Select(point => new ChartPointDTO
+                {
+                    Date = point.Date.ToString("dd"),
+                    Value = point.Value
+                }).ToList()
+            }).ToList();
+
+            return Ok(chartDatasDTO);
         }
 
         [HttpGet("{categoryId}&{period}")]
         public async Task<ActionResult<ChartData>> GetChartData(Guid categoryId, string period)
         {
-            var chratData = await _rpstr.GetChartDataByCategoryIdAndPeriod(categoryId, period);
-            return Ok(chratData);
+            var chartData = await _rpstr.GetChartDataByCategoryIdAndPeriod(categoryId, period);
+
+            var chartDataDTO = new ChartDataDTO
+            {
+                CategoryId = chartData.CategoryId.ToString(),
+                Title = chartData.Title,
+                Points = chartData.Points.Select(point => new ChartPointDTO
+                {
+                    Date = point.Date.ToString("yyyy-MM-dd"),
+                    Value = point.Value
+                }).ToList()
+            };
+
+            return Ok(chartData);
         }
     }
 }
