@@ -1,0 +1,28 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "q1W!2e3r4t5y"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  server:
+    build:
+      context: .
+      target: final
+    container_name: phosAnalytics
+    depends_on:
+      - db
+    environment:
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+      - ConnectionStrings:phosAnalyticsApiContext=Server=sqlserver;Database=phosAnalytics;User Id=SA;Password=q1W!2e3r4t5y;TrustServerCertificate=True;MultipleActiveResultSets=True;
+    ports:
+      - "8080:8080"
+    restart: always
+
+volumes:
+  sqlserver_data:
