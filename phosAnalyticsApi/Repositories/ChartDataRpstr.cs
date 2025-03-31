@@ -13,14 +13,41 @@ namespace phosAnalyticsApi.Repositories
             _context = context;
         }
 
-        public async Task<ChartData> GetChartDataByCategoryIdAndPeriod(Guid categoryId, string dateRange)
+        public async Task<ChartData> GetChartDataByCategoryIdAndDateRange(Guid categoryId, DateTime startDate, DateTime endDate)
         {
-            return await _context.ChartData.FirstOrDefaultAsync(cD => cD.CategoryId == categoryId);
+            return await _context.ChartData
+                .Include(cD => cD.Points)
+                .Where(cD => cD.CategoryId == categoryId)
+                .Select(cD => new ChartData
+                {
+                    ChartDataId = cD.ChartDataId,
+                    Title = cD.Title,
+                    CategoryId = cD.CategoryId,
+                    Points = cD.Points
+                        .Where(p => p.Date.Date >= startDate && p.Date.Date <= endDate)
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<List<ChartData>> GetChartDatas()
+        public async Task<List<ChartData>> GetChartDatas(DateTime date)
         {
-            return await _context.ChartData.Include(cD => cD.Points).ToListAsync();
-        }
+            DateTime startOfWeek = date.AddDays(-(int)date.DayOfWeek + (int)DayOfWeek.Monday);
+            DateTime endOfWeek = date.Date;
+
+            return await _context.ChartData
+                .Include(cD => cD.Points)
+                .Where(cD => cD.Points.Any(p => p.Date.Date >= startOfWeek && p.Date.Date <= endOfWeek))
+                .Select(cD => new ChartData
+                {
+                    ChartDataId = cD.ChartDataId,
+                    Title = cD.Title,
+                    CategoryId = cD.CategoryId,
+                    Points = cD.Points
+                        .Where(p => p.Date.Date >= startOfWeek && p.Date.Date <= endOfWeek)
+                        .ToList()
+                })
+                .ToListAsync();
+                }
     }
 }

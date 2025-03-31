@@ -2,6 +2,7 @@
 using phosAnalyticsApi.DTOs;
 using phosAnalyticsApi.IRepositories;
 using phosAnalyticsApi.Models;
+using System.Globalization;
 
 namespace phosAnalyticsApi.Controllers
 {
@@ -19,7 +20,9 @@ namespace phosAnalyticsApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ChartData>>> GetChartData()
         {
-            var chartDatas = await _rpstr.GetChartDatas();
+            DateTime requestDate = DateTime.UtcNow.Date;
+
+            var chartDatas = await _rpstr.GetChartDatas(requestDate);
 
             var chartDatasDTO = chartDatas.Select(chartData => new ChartDataDTO
             {
@@ -38,7 +41,19 @@ namespace phosAnalyticsApi.Controllers
         [HttpGet("{categoryId}&{period}")]
         public async Task<ActionResult<ChartData>> GetChartData(Guid categoryId, string period)
         {
-            var chartData = await _rpstr.GetChartDataByCategoryIdAndPeriod(categoryId, period);
+            var dates = period.Split('-');
+            if (dates.Length != 2 ||
+                !DateTime.TryParseExact(dates[0], "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime startDate) ||
+                !DateTime.TryParseExact(dates[1], "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime endDate))
+            {
+                return BadRequest("Используйте 'dd.MM.yyyy-dd.MM.yyyy'");
+            }
+
+            var chartData = await _rpstr.GetChartDataByCategoryIdAndDateRange(categoryId, startDate, endDate);
+            if (chartData == null)
+            {
+                return NotFound("Данные не найдены");
+            }
 
             var chartDataDTO = new ChartDataDTO
             {

@@ -38,4 +38,4 @@ ENV LANG=en_US.UTF-8
 COPY --from=build /app .
 COPY --from=migrator /app/efbundle .
 
-ENTRYPOINT ["sh", "-c", "./efbundle && dotnet phosAnalyticsApi.dll"]
+ENTRYPOINT ["dotnet", "phosAnalyticsApi.dll"]

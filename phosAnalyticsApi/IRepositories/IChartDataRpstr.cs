@@ -4,7 +4,7 @@ namespace phosAnalyticsApi.IRepositories
 {
     public interface IChartDataRpstr
     {
-        Task<List<ChartData>> GetChartDatas();
-        Task<ChartData> GetChartDataByCategoryIdAndPeriod(Guid categoryId, string dateRange);
+        Task<List<ChartData>> GetChartDatas(DateTime date);
+        Task<ChartData> GetChartDataByCategoryIdAndDateRange(Guid categoryId, DateTime startDate, DateTime endDate);
     }
 }
