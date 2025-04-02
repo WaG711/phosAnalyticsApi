@@ -63,7 +63,8 @@ namespace phosAnalyticsApi.Controllers
                 {
                     Date = point.Date.ToString("yyyy-MM-dd"),
                     Value = point.Value
-                }).ToList()
+                }).ToList(),
+                Description = chartData.Description,
             };
 
             return Ok(chartData);

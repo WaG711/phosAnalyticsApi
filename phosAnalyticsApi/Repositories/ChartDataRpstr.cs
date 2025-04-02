@@ -25,7 +25,8 @@ namespace phosAnalyticsApi.Repositories
                     CategoryId = cD.CategoryId,
                     Points = cD.Points
                         .Where(p => p.Date.Date >= startDate && p.Date.Date <= endDate)
-                        .ToList()
+                        .ToList(),
+                    Description = cD.Description
                 })
                 .FirstOrDefaultAsync();
         }
