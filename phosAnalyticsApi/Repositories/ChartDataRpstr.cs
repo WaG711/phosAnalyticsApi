@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using phosAnalyticsApi.DTOs;
 using phosAnalyticsApi.IRepositories;
 using phosAnalyticsApi.Models;
 
@@ -18,6 +19,7 @@ namespace phosAnalyticsApi.Repositories
             return await _context.ChartData
                 .Include(cD => cD.Points)
                 .Where(cD => cD.CategoryId == categoryId)
+                .OrderBy(cD => cD.Title)
                 .Select(cD => new ChartData
                 {
                     ChartDataId = cD.ChartDataId,
@@ -25,10 +27,27 @@ namespace phosAnalyticsApi.Repositories
                     CategoryId = cD.CategoryId,
                     Points = cD.Points
                         .Where(p => p.Date.Date >= startDate && p.Date.Date <= endDate)
+                        .OrderBy(p => p.Date)
                         .ToList(),
                     Description = cD.Description
                 })
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<PieChartDTO>> GetPieChartDatas(List<Guid> categoryIds, DateTime firstDayOfPreviousMonth, DateTime lastDayOfPreviousMonth)
+        {
+            return await _context.ChartData
+                .Include(c => c.Points)
+                .Where(c => categoryIds.Contains(c.CategoryId))
+                .Select(c => new PieChartDTO
+                {
+                    Title = c.Title,
+                    Value = c.Points
+                        .Where(p => p.Date.Date >= firstDayOfPreviousMonth && p.Date.Date <= lastDayOfPreviousMonth)
+                        .Sum(p => p.Value)
+                })
+                .OrderBy(c => c.Title)
+                .ToListAsync();
         }
 
         public async Task<List<ChartData>> GetChartDatas(DateTime date)
@@ -39,6 +58,7 @@ namespace phosAnalyticsApi.Repositories
             return await _context.ChartData
                 .Include(cD => cD.Points)
                 .Where(cD => cD.Points.Any(p => p.Date.Date >= startOfWeek && p.Date.Date <= endOfWeek))
+                .OrderBy(cD => cD.Title)
                 .Select(cD => new ChartData
                 {
                     ChartDataId = cD.ChartDataId,
@@ -46,9 +66,10 @@ namespace phosAnalyticsApi.Repositories
                     CategoryId = cD.CategoryId,
                     Points = cD.Points
                         .Where(p => p.Date.Date >= startOfWeek && p.Date.Date <= endOfWeek)
+                        .OrderBy(p => p.Date)
                         .ToList()
                 })
                 .ToListAsync();
-                }
+        }
     }
 }
