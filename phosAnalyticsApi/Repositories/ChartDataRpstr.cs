@@ -52,12 +52,12 @@ namespace phosAnalyticsApi.Repositories
 
         public async Task<List<ChartData>> GetChartDatas(DateTime date)
         {
-            DateTime startOfWeek = date.AddDays(-(int)date.DayOfWeek + (int)DayOfWeek.Monday);
-            DateTime endOfWeek = date.Date;
+            DateTime endDate = date.AddDays(-1).Date;
+            DateTime startDate = endDate.AddDays(-6);
 
             return await _context.ChartData
                 .Include(cD => cD.Points)
-                .Where(cD => cD.Points.Any(p => p.Date.Date >= startOfWeek && p.Date.Date <= endOfWeek))
+                .Where(cD => cD.Points.Any(p => p.Date.Date >= startDate && p.Date.Date <= endDate))
                 .OrderBy(cD => cD.Title)
                 .Select(cD => new ChartData
                 {
@@ -65,9 +65,10 @@ namespace phosAnalyticsApi.Repositories
                     Title = cD.Title,
                     CategoryId = cD.CategoryId,
                     Points = cD.Points
-                        .Where(p => p.Date.Date >= startOfWeek && p.Date.Date <= endOfWeek)
+                        .Where(p => p.Date.Date >= startDate && p.Date.Date <= endDate)
                         .OrderBy(p => p.Date)
-                        .ToList()
+                        .ToList(),
+                    Description = cD.Description
                 })
                 .ToListAsync();
         }
