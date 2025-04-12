@@ -25,5 +25,17 @@ services:
       - "8080:8080"
     restart: unless-stopped
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok_phosAnalytics
+    depends_on:
+      - server
+    environment:
+      NGROK_AUTHTOKEN: ""
+    command: http phosAnalytics:8080
+    restart: unless-stopped
+    profiles:
+      - ngrok
+
 volumes:
   sqlserver_data:
