@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using phosAnalyticsApi.IRepositories;
 using phosAnalyticsApi.Repositories;
+using phosAnalyticsApi.Services;
 
 namespace phosAnalyticsApi
 {
@@ -20,6 +21,7 @@ namespace phosAnalyticsApi
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped<IChartDataRpstr, ChartDataRpstr>();
+            builder.Services.AddScoped<ChartDataForecastService>();
 
             var app = builder.Build();
 

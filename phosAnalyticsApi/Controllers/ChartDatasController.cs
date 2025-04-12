@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using phosAnalyticsApi.DTOs;
 using phosAnalyticsApi.IRepositories;
+using phosAnalyticsApi.Services;
 using System.Globalization;
 
 namespace phosAnalyticsApi.Controllers
@@ -10,10 +11,12 @@ namespace phosAnalyticsApi.Controllers
     public class ChartDatasController : ControllerBase
     {
         private readonly IChartDataRpstr _rpstr;
+        private readonly ChartDataForecastService _forecastService;
 
-        public ChartDatasController(IChartDataRpstr rpstr)
+        public ChartDatasController(IChartDataRpstr rpstr, ChartDataForecastService forecastService)
         {
             _rpstr = rpstr;
+            _forecastService = forecastService;
         }
 
         [HttpGet("bars")]
@@ -57,6 +60,29 @@ namespace phosAnalyticsApi.Controllers
             return Ok(pieChartDTO);
         }
 
+        [HttpGet("forecast/{categoryId}")]
+        public async Task<ActionResult<ChartDataDTO>> GetChartDataForecast(Guid categoryId)
+        {
+            DateTime requestDate = DateTime.UtcNow.Date;
+            DateTime endDate = requestDate.AddDays(30);
+
+            var chartData = await _rpstr.GetChartDataByCategoryId(categoryId, requestDate, endDate);
+
+            var chartDataDTO = new ChartDataDTO
+            {
+                CategoryId = chartData.CategoryId.ToString(),
+                Title = chartData.Title,
+                Points = chartData.Points.Select(point => new ChartPointDTO
+                {
+                    Date = point.Date.ToString("dd.MM"),
+                    Value = point.Value
+                }).ToList(),
+                Description = chartData.Description,
+            };
+
+            return Ok(chartDataDTO);
+        }
+
         [HttpGet("{categoryId}&{period}")]
         public async Task<ActionResult<ChartDataDTO>> GetChartData(Guid categoryId, string period)
         {
@@ -68,22 +94,45 @@ namespace phosAnalyticsApi.Controllers
                 return BadRequest("Используйте 'dd.MM.yyyy-dd.MM.yyyy'");
             }
 
-            var chartData = await _rpstr.GetChartDataByCategoryIdAndDateRange(categoryId, startDate, endDate);
-            if (chartData == null)
+            var data = await _rpstr.GetChartDataByCategoryIdAndDateRange(categoryId, startDate, endDate);
+            if (data == null) return NotFound("Данные не найдены");
+
+            var totalDays = (endDate - startDate).TotalDays;
+            var aggregatedPoints = new List<ChartPointDTO>();
+
+            int groupSize = totalDays switch
             {
-                return NotFound("Данные не найдены");
+                <= 14 => 1,
+                <= 30 => 2,
+                <= 60 => 7,
+                <= 90 => 14,
+                <= 180 => 14,
+                _ => 30
+            };
+
+            for (var date = startDate; date <= endDate; date = date.AddDays(groupSize))
+            {
+                var chunkEnd = date.AddDays(groupSize - 1) > endDate ? endDate : date.AddDays(groupSize - 1);
+                var group = data.Points.Where(p => p.Date >= date && p.Date <= chunkEnd).ToList();
+
+                double avg = group.Any() ? group.Average(p => p.Value) : 0;
+                string label = groupSize > 1
+                    ? $"{date:dd.MM}\n{chunkEnd:dd.MM}"
+                    : $"{date:dd.MM}";
+
+                aggregatedPoints.Add(new ChartPointDTO
+                {
+                    Date = label,
+                    Value = avg
+                });
             }
 
             var chartDataDTO = new ChartDataDTO
             {
-                CategoryId = chartData.CategoryId.ToString(),
-                Title = chartData.Title,
-                Points = chartData.Points.Select(point => new ChartPointDTO
-                {
-                    Date = point.Date.ToString("MM-dd"),
-                    Value = point.Value
-                }).ToList(),
-                Description = chartData.Description,
+                CategoryId = data.CategoryId.ToString(),
+                Title = data.Title,
+                Description = data.Description,
+                Points = aggregatedPoints
             };
 
             return Ok(chartDataDTO);

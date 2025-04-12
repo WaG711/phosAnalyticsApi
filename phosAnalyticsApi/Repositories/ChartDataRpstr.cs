@@ -14,12 +14,30 @@ namespace phosAnalyticsApi.Repositories
             _context = context;
         }
 
+        public async Task<ChartData> GetChartDataByCategoryId(Guid categoryId, DateTime startDate, DateTime endDate)
+        {
+            return await _context.ChartData
+                .Include(cD => cD.Points)
+                .Where(cD => cD.CategoryId == categoryId)
+                .Select(cD => new ChartData
+                {
+                    ChartDataId = cD.ChartDataId,
+                    Title = cD.Title,
+                    CategoryId = cD.CategoryId,
+                    Points = cD.Points
+                    .Where(p => p.Date.Date >= startDate && p.Date.Date <= endDate)
+                    .OrderBy(p => p.Date)
+                    .ToList(),
+                    Description = cD.Description
+                })
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<ChartData> GetChartDataByCategoryIdAndDateRange(Guid categoryId, DateTime startDate, DateTime endDate)
         {
             return await _context.ChartData
                 .Include(cD => cD.Points)
                 .Where(cD => cD.CategoryId == categoryId)
-                .OrderBy(cD => cD.Title)
                 .Select(cD => new ChartData
                 {
                     ChartDataId = cD.ChartDataId,
