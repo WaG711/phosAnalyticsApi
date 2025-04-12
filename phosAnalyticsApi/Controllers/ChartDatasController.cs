@@ -63,7 +63,7 @@ namespace phosAnalyticsApi.Controllers
         [HttpGet("forecast/{categoryId}")]
         public async Task<ActionResult<ChartDataDTO>> GetChartDataForecast(Guid categoryId)
         {
-            DateTime requestDate = DateTime.UtcNow.Date;
+            DateTime requestDate = DateTime.UtcNow.Date.AddDays(1);
             DateTime endDate = requestDate.AddDays(30);
 
             var chartData = await _rpstr.GetChartDataByCategoryId(categoryId, requestDate, endDate);
