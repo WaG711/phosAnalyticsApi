@@ -31,7 +31,7 @@ services:
     depends_on:
       - server
     environment:
-      NGROK_AUTHTOKEN: ""
+      NGROK_AUTHTOKEN: "2vdGDQZh2sEm6YpziOroTQbkNYO_5FJFmNhxHsqK2iy6JsC9Q"
     command: http phosAnalytics:8080
     restart: unless-stopped
     profiles:

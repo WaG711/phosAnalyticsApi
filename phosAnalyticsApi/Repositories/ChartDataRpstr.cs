@@ -14,7 +14,7 @@ namespace phosAnalyticsApi.Repositories
             _context = context;
         }
 
-        public async Task<ChartData> GetChartDataByCategoryId(Guid categoryId, DateTime startDate, DateTime endDate)
+        public async Task<ChartData> GetChartDataByCategoryId(Guid categoryId, DateTime dateNow)
         {
             return await _context.ChartData
                 .Include(cD => cD.Points)
@@ -25,7 +25,7 @@ namespace phosAnalyticsApi.Repositories
                     Title = cD.Title,
                     CategoryId = cD.CategoryId,
                     Points = cD.Points
-                    .Where(p => p.Date.Date >= startDate && p.Date.Date <= endDate)
+                    .Where(p => p.Date.Date <= dateNow)
                     .OrderBy(p => p.Date)
                     .ToList(),
                     Description = cD.Description
