@@ -50,10 +50,10 @@ namespace phosAnalyticsApi.Controllers
 
             var categoryIds = new List<Guid>
             {
-                Guid.Parse("894f82d3-9bb5-43d8-b502-52181c52ea4e"),
-                Guid.Parse("294dec00-eb26-4943-80b7-9763eb163686"),
-                Guid.Parse("030db36a-5614-4040-9191-2be35c70eef1"),
-                Guid.Parse("3ed80b09-c9a0-4a21-88b5-63fa521fb832")
+                Guid.Parse("D5F8585D-3EC1-4C87-BEED-C6F467FC9588"),
+                Guid.Parse("B5ED03EE-6E19-4FCA-AFD5-823B21C97B81"),
+                Guid.Parse("A08EE7B4-9E53-4BBD-BE90-D57B303CE42F"),
+                Guid.Parse("AF40B3F8-4018-45A1-B539-0E164735B0F8")
             };
 
             var pieChartDTO = await _rpstr.GetPieChartDatas(categoryIds, firstDayOfPreviousMonth, lastDayOfPreviousMonth);
